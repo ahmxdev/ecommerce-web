@@ -7,15 +7,17 @@ import { Button } from "../../components/ui/button";
 import { Label } from "../../components/ui/label";
 
 // API
-import { login } from "./login.api";
+import { register as registerUser } from "./register.api";
 import axios from "axios";
 
 // AUTH
 import { useAuth } from "@/contexts/AuthContext";
 
-type LoginFormData = {
+type RegisterFormData = {
+  name: string;
   email: string;
   password: string;
+  password_confirmation: string;
 };
 type ValidationErrors<T> = Partial<Record<keyof T, string[]>>;
 type ValidationErrorResponse<T> = {
@@ -23,19 +25,19 @@ type ValidationErrorResponse<T> = {
   errors: ValidationErrors<T>;
 };
 
-export default function LoginForm() {
+export default function RegisterForm() {
   const {
     register,
     handleSubmit,
     formState: { errors },
     setError,
-  } = useForm<LoginFormData>();
+  } = useForm<RegisterFormData>();
 
   const auth = useAuth();
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: RegisterFormData) => {
     try {
-      const response = await login(data);
+      const response = await registerUser(data);
       auth.login(response);
     } catch (error) {
       if (!axios.isAxiosError(error)) {
@@ -44,10 +46,10 @@ export default function LoginForm() {
 
       if (error.response?.status === 422) {
         const data = error.response
-          .data as ValidationErrorResponse<LoginFormData>;
+          .data as ValidationErrorResponse<RegisterFormData>;
 
         Object.entries(data.errors).forEach(([field, messages]) => {
-          setError(field as keyof LoginFormData, {
+          setError(field as keyof RegisterFormData, {
             type: "server",
             message: messages?.[0] ?? "",
           });
@@ -69,6 +71,24 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      {/* Name */}
+      <div className="flex flex-col gap-1">
+        <Label htmlFor="name">Name</Label>
+        <Input
+          className={
+            errors.name
+              ? "border-red-500 ring-red-500/40 ring-1 focus-visible:ring-red-500/40 focus-visible:border-red-500"
+              : ""
+          }
+          id="name"
+          type="text"
+          {...register("name", {
+            required: "Name is required",
+          })}
+        />
+        {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+      </div>
+      {/* End Name */}
       {/* Email */}
       <div className="flex flex-col gap-1">
         <Label htmlFor="email">Email</Label>
@@ -109,9 +129,30 @@ export default function LoginForm() {
       </div>
       {/* End Password */}
 
-      {/* Login Button */}
-      <Button type="submit">Login</Button>
-      {/* End Login Button */}
+      {/* Password Confirm */}
+      <div className="flex flex-col gap-1 ">
+        <Label htmlFor="password_confirmation">Confirm Password</Label>
+        <Input
+          className={
+            errors.password_confirmation
+              ? "border-red-500 ring-red-500/40 ring-1 focus-visible:ring-red-500/40 focus-visible:border-red-500"
+              : ""
+          }
+          id="password_confirmation"
+          type="password"
+          {...register("password_confirmation", {
+            required: "Confirm Password is required",
+          })}
+        />
+        {errors.password_confirmation && (
+          <p className="text-red-500">{errors.password_confirmation.message}</p>
+        )}
+      </div>
+      {/* End Password Confirm */}
+
+      {/* Register Button */}
+      <Button type="submit">Register</Button>
+      {/* End Register Button */}
 
       {/* Root Error Message */}
       {errors.root && <p className="text-red-500">{errors.root.message}</p>}

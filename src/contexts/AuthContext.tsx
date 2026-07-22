@@ -3,8 +3,7 @@ import { useState, createContext, useContext, useEffect } from "react";
 
 // TYPES
 import type { User } from "@/types/user";
-import type { LoginResponse } from "@/pages/Login/login.api";
-
+import type { AuthResponse } from "@/types/auth";
 // AUTH
 import { getToken, removeToken, saveToken } from "@/auth/token-storage";
 import { getCurrentUser } from "@/auth/auth.api";
@@ -14,7 +13,7 @@ type AuthContextValue = {
 
   isAuthenticated: boolean;
 
-  login: (response: LoginResponse) => void;
+  login: (response: AuthResponse) => void;
 
   logout: () => void;
 };
@@ -63,7 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const isAuthenticated = user !== null;
 
-  const login = (response: LoginResponse) => {
+  const login = (response: AuthResponse) => {
     saveToken(response.token);
     setUser(response.user);
   };
