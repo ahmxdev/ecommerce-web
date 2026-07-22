@@ -13,6 +13,8 @@ type AuthContextValue = {
 
   isAuthenticated: boolean;
 
+  isLoading: boolean;
+
   login: (response: AuthResponse) => void;
 
   logout: () => void;
@@ -36,21 +38,22 @@ type AuthProviderProps = {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const restoreSession = async () => {
       const token = getToken();
 
-      if (!token) {
-        return;
+      if (token) {
+        try {
+          const user = await getCurrentUser();
+          setUser(user);
+        } catch (error) {
+          console.log("error from auth ", error);
+        }
       }
 
-      try {
-        const user = await getCurrentUser();
-        setUser(user);
-      } catch (error) {
-        console.log("error from auth ", error);
-      }
+      setIsLoading(false);
     };
 
     restoreSession();
@@ -70,6 +73,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const value: AuthContextValue = {
     user,
     isAuthenticated,
+    isLoading,
     login,
     logout,
   };
