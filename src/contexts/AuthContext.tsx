@@ -1,0 +1,83 @@
+// REACT
+import { useState, createContext, useContext, useEffect } from "react";
+
+// TYPES
+import type { User } from "@/types/user";
+import type { LoginResponse } from "@/pages/Login/login.api";
+
+// AUTH
+import { getToken, removeToken, saveToken } from "@/auth/token-storage";
+import { getCurrentUser } from "@/auth/auth.api";
+
+type AuthContextValue = {
+  user: User | null;
+
+  isAuthenticated: boolean;
+
+  login: (response: LoginResponse) => void;
+
+  logout: () => void;
+};
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+
+  if (context === undefined) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+
+  return context;
+}
+
+type AuthProviderProps = {
+  children: React.ReactNode;
+};
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const restoreSession = async () => {
+      const token = getToken();
+
+      if (!token) {
+        return;
+      }
+
+      //   const user = await getCurrentUser();
+
+      try {
+        const user = await getCurrentUser();
+        setUser(user);
+      } catch (error) {
+        console.log("error from auth ", error);
+      }
+
+      //   setUser(user);
+    };
+
+    restoreSession();
+  }, []);
+
+  const isAuthenticated = user !== null;
+
+  const login = (response: LoginResponse) => {
+    saveToken(response.token);
+    setUser(response.user);
+  };
+  const logout = () => {
+    removeToken();
+    setUser(null);
+  };
+
+  const value: AuthContextValue = {
+    user,
+    isAuthenticated,
+    login,
+    logout,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}

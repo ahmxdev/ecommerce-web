@@ -6,9 +6,21 @@ import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { Label } from "../../components/ui/label";
 
+// API
+import { login } from "./login.api";
+import axios from "axios";
+
+// AUTH
+import { useAuth } from "@/contexts/AuthContext";
+
 type LoginFormData = {
   email: string;
   password: string;
+};
+type ValidationErrors<T> = Partial<Record<keyof T, string[]>>;
+type ValidationErrorResponse<T> = {
+  message: string;
+  errors: ValidationErrors<T>;
 };
 
 export default function LoginForm() {
@@ -16,10 +28,45 @@ export default function LoginForm() {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm<LoginFormData>();
 
-  const onSubmit = (data: LoginFormData) => {
-    console.log(data);
+  const auth = useAuth();
+
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      const response = await login(data);
+      auth.login(response);
+    } catch (error) {
+      if (!axios.isAxiosError(error)) {
+        return;
+      }
+
+      if (error.response?.status === 422) {
+        const data = error.response
+          .data as ValidationErrorResponse<LoginFormData>;
+
+        console.log(data.errors);
+
+        Object.entries(data.errors).forEach(([field, messages]) => {
+          setError(field as keyof LoginFormData, {
+            type: "server",
+            message: messages?.[0] ?? "",
+          });
+        });
+
+        return;
+      }
+
+      if (error.response?.status === 401) {
+        const data = error.response.data as { message: string };
+
+        setError("root", {
+          type: "server",
+          message: data.message,
+        });
+      }
+    }
   };
 
   return (
@@ -61,6 +108,7 @@ export default function LoginForm() {
       </div>
 
       <Button type="submit">Login</Button>
+      {errors.root && <p className="text-red-500">{errors.root.message}</p>}
     </form>
   );
 }
