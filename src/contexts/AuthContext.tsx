@@ -6,7 +6,7 @@ import type { User } from "@/types/user";
 import type { AuthResponse } from "@/types/auth";
 // AUTH
 import { getToken, removeToken, saveToken } from "@/auth/token-storage";
-import { getCurrentUser } from "@/auth/auth.api";
+import { getCurrentUser, logout as logoutRequest } from "@/auth/auth.api";
 
 type AuthContextValue = {
   user: User | null;
@@ -17,7 +17,7 @@ type AuthContextValue = {
 
   login: (response: AuthResponse) => void;
 
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -65,7 +65,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     saveToken(response.token);
     setUser(response.user);
   };
-  const logout = () => {
+  const logout = async () => {
+    await logoutRequest();
     removeToken();
     setUser(null);
   };

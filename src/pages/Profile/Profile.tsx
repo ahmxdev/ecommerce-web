@@ -1,7 +1,8 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   console.log(user);
 
   return (
@@ -11,6 +12,7 @@ export default function Profile() {
 
         <p>Name: {user?.name}</p>
         <p>Email: {user?.email}</p>
+        <Button onClick={logout}>Logout</Button>
       </div>
     </main>
   );
