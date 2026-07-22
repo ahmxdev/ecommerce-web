@@ -4,15 +4,24 @@ import Register from "./pages/Register/Register";
 import Login from "./pages/Login/Login";
 import Profile from "./pages/Profile/Profile";
 import ProtectedRoute from "./auth/ProtectedRoute";
+import GuestRoute from "./auth/GuestRoute";
 
 export const router = createBrowserRouter([
   {
     path: "/login",
-    element: <Login />,
+    element: (
+      <GuestRoute>
+        <Login />
+      </GuestRoute>
+    ),
   },
   {
     path: "/register",
-    element: <Register />,
+    element: (
+      <GuestRoute>
+        <Register />
+      </GuestRoute>
+    ),
   },
   {
     path: "/profile",
