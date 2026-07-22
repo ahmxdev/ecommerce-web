@@ -8,7 +8,7 @@ import { Button } from "../../components/ui/button";
 import { Label } from "../../components/ui/label";
 
 // API
-import { login } from "./login.api";
+import { login } from "../../auth/auth.api";
 import axios from "axios";
 
 // AUTH
