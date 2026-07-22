@@ -45,16 +45,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
 
-      //   const user = await getCurrentUser();
-
       try {
         const user = await getCurrentUser();
         setUser(user);
       } catch (error) {
         console.log("error from auth ", error);
       }
-
-      //   setUser(user);
     };
 
     restoreSession();

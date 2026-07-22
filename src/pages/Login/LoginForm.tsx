@@ -1,5 +1,6 @@
 // HOOKS
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
 
 // UI
 import { Input } from "../../components/ui/input";
@@ -32,11 +33,13 @@ export default function LoginForm() {
   } = useForm<LoginFormData>();
 
   const auth = useAuth();
+  const navigate = useNavigate();
 
   const onSubmit = async (data: LoginFormData) => {
     try {
       const response = await login(data);
       auth.login(response);
+      navigate("/profile", { replace: true });
     } catch (error) {
       if (!axios.isAxiosError(error)) {
         return;
